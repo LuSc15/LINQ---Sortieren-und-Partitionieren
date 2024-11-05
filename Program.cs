@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace LINQ___Sortieren_und_Partitionieren
 {
@@ -76,7 +77,28 @@ Listen Sie alle Dateien in dem Verzeichnis, nach dem Datum des letzten Zugriffs 
             foreach(var v in ohneErsteUndLetzten3) Console.WriteLine(v);
             var groesser0 = numbers.Where(x => x > 0);
             foreach(var v in groesser0) Console.WriteLine(v);
-            var nach12 numbers.Skip(numbers.)
+            var nach12 = numbers.Skip(Array.IndexOf(numbers, 12)+1).Select(x => x);
+            Console.WriteLine("Skip bis 12:");
+            foreach (var v in nach12) Console.WriteLine(v);
+
+            DirectoryInfo DI = new DirectoryInfo(@"C:\Windows\");
+            var neusten5 = DI.GetFiles().OrderByDescending(x=>x.LastWriteTime).Take(5);
+            Console.WriteLine("letzte 5 Dateien aus Windows:");
+            foreach(var v in neusten5) Console.WriteLine(v+" - "+v.LastWriteTime);
+
+            var gruppiert = Directory.EnumerateFiles(@"C:\Windows\").Select((datei, autoIndex) => new { File = datei, Index = autoIndex }).GroupBy(x => x.Index / 5).Select(g => g.Select(x => x.File).ToList()); //der 2. Parameter von Select definiert den Indexer
+            Console.WriteLine("Gruppiert in 5er-Blöcken:");
+            int i = 0;
+            foreach(var v in gruppiert)
+            {
+                Console.WriteLine("Seite "+i);
+                foreach(var vi in v)
+                {
+                    Console.WriteLine(vi);
+                }
+                i++;
+                Console.WriteLine("----------------");
+            }
 
 
 
