@@ -1,10 +1,17 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace LINQ___Sortieren_und_Partitionieren
 {
     internal class Program
     {
+        enum options
+        {
+            lastAccess,
+            size
+        }
         static void Main(string[] args)
         {
             int[] numbers = { 5, 4, 1, 3, 9, 8, 6, 7, 2, 0, 22, 12, 16, 18, 11, 19, 13 };
@@ -16,16 +23,12 @@ Geben Sie das obige Array absteigend sortiert aus
 Geben Sie aus dem obigen Array alle graden Zahlen aufsteigend sortiert aus*/
 
             var aufsteigend = numbers.OrderBy(x => x);
+            Ausgabe(aufsteigend, "Aufsteigend:");
             var absteigend = numbers.OrderByDescending(x => x);
-            var geradeAufsteigend = numbers.OrderBy(x => x).Where(x => x % 2 == 0);
-            Console.WriteLine("aufsteigend:");
-            foreach(var v in aufsteigend) Console.WriteLine(v);
+            Ausgabe(absteigend, "Absteigend:");
+            var geradeAufsteigend = numbers.Where(x => x % 2 == 0).OrderBy(x => x);
+            Ausgabe(geradeAufsteigend, "nur gerade Zahlen, aufsteigend:");
 
-            Console.WriteLine("Absteigend:");
-            foreach(var v in absteigend)  Console.WriteLine(v);
-
-            Console.WriteLine("gerade aufsteigend:");
-            foreach(var v in geradeAufsteigend) Console.WriteLine(v);
 
 
             string[] numbersString = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen" };
@@ -46,50 +49,65 @@ Listen Sie alle Dateien in dem Verzeichnis, nach Größe aufsteigend sortiert au
 Listen Sie alle Dateien in dem Verzeichnis, nach dem Datum des letzten Zugriffs auf, jüngste Dateien zuerst*/
 
             var laengeAufsteigend = numbersString.OrderBy(x => x.Length);
-            var laengeAufsteigendDannAlphabetisch = numbersString.OrderBy(x => x.Length).ThenBy(x => x);
+            Ausgabe(laengeAufsteigend, "Nach Länge aufsteigend:");
+
+            var laengeAufsteigendDannAlphabetisch = numbersString.OrderBy(x => x.Length).ThenByDescending(x => x);
+            Ausgabe(laengeAufsteigendDannAlphabetisch, "Nach Länge aufsteigend dann alphabetisch:");
+
             var drehen = numbersString.Reverse();
-            Console.WriteLine("Nach Länge aufsteigend:");
-            foreach(var v in laengeAufsteigend) Console.WriteLine(v);
-            Console.WriteLine("Länge aufsteigend dann alphabetisch:");
-            foreach(var v in laengeAufsteigendDannAlphabetisch) Console.WriteLine(v);
-            Console.WriteLine("umgekehrte Reihenfolge:");
-            foreach(var v in drehen) Console.WriteLine(v);
+            Ausgabe(drehen, "Umgekehrte Reihenfolge:");
 
-            Console.WriteLine("Dateien aus C:Windows nach Namen sortiert:");
             DirectoryInfo d = new DirectoryInfo(@"C:\Windows\");
-            var dateienNachName = d.GetFiles().OrderBy(x => x.Name);
-            foreach (var v in dateienNachName) Console.WriteLine(v.Name);
+            var dateienNachName = d.GetFiles().OrderByDescending(x => x.Name);
 
-            Console.WriteLine("Datei nach größe");
-            var dateienNachGroesse = d.GetFiles().OrderBy(x => x.Length);
-            foreach(var v in dateienNachGroesse) Console.WriteLine(v.Name+" "+v.Length);
-            Console.WriteLine("Dateien nach letztem Zugriff:");
+            var dateienNachNameQuery = from file in d.EnumerateFiles() orderby file.Name descending select file;
+            Ausgabe(dateienNachName, "Dateien nach Name sortiert:");
+
+
+
+            var dateienNachGroesse = d.GetFiles().OrderBy(f => f.Length).Select(file => new { file.Name, file.Length });
+            Console.WriteLine("Dateien nach Größe:");
+            foreach(var v in dateienNachGroesse)
+            {
+                Console.WriteLine(v);
+            }
+            // Ausgabe(dateienNachGroesse, "Dateien nach Größe:", "size");
+
+
+
+
+
             var letzterZugriff = d.GetFiles().OrderBy(x => x.LastAccessTime.Ticks);
-            foreach(var v in letzterZugriff) Console.WriteLine(v.Name+" - "+v.LastAccessTime.ToString());
-
+            Ausgabe(letzterZugriff, "Dateien nach letztem Zugriff:", "last access");
 
             int[] numbers3 = { 5, 4, 1, 3, 9, 8, 6, 7, 2, 0, 22, 12, 16, 18, 11, 19, 13 };
             var ersten5 = numbers3.Take(5);
-            foreach(var v in ersten5) Console.WriteLine(v);
+            Ausgabe(ersten5, "Die ersten 5 Werte:");
+
             var letzten5 = numbers.TakeLast(5);
-            foreach(var v in letzten5) Console.WriteLine(v);
+            Ausgabe(letzten5, "Die letzten 5 Werte:");
+
             var ohneErsteUndLetzten3 = numbers.Skip(3).SkipLast(3);
-            foreach(var v in ohneErsteUndLetzten3) Console.WriteLine(v);
+            Ausgabe(ohneErsteUndLetzten3, "Ohne ersten 3 und letzten 3 Werte:");
+
             var groesser0 = numbers.Where(x => x > 0);
-            foreach(var v in groesser0) Console.WriteLine(v);
+            Ausgabe(groesser0, "Werte größer 0:");
+
             var nach12 = numbers.Skip(Array.IndexOf(numbers, 12)+1).Select(x => x);
-            Console.WriteLine("Skip bis 12:");
-            foreach (var v in nach12) Console.WriteLine(v);
+            var nach12alternativ = numbers.SkipWhile(x => x != 12).Skip(1);
+            Ausgabe(nach12, "Alle Werte die nach 12 folgen:");
 
             DirectoryInfo DI = new DirectoryInfo(@"C:\Windows\");
             var neusten5 = DI.GetFiles().OrderByDescending(x=>x.LastWriteTime).Take(5);
-            Console.WriteLine("letzte 5 Dateien aus Windows:");
-            foreach(var v in neusten5) Console.WriteLine(v+" - "+v.LastWriteTime);
+            Ausgabe(neusten5, @"5 Daten die zuletzt geändert wurden aus C:\Windows\:","last access");
 
-            var gruppiert = Directory.EnumerateFiles(@"C:\Windows\").Select((datei, autoIndex) => new { File = datei, Index = autoIndex }).GroupBy(x => x.Index / 5).Select(g => g.Select(x => x.File).ToList()); //der 2. Parameter von Select definiert den Indexer
-            Console.WriteLine("Gruppiert in 5er-Blöcken:");
+            // var gruppiert = Directory.EnumerateFiles(@"C:\Windows\").Select((datei, autoIndex) => new { File = datei, Index = autoIndex }).GroupBy(x => x.Index / 5).Select(g => g.Select(x => x.File).ToList()); //der 2. Parameter von Select definiert den Indexer
+            var gruppiertChunk = DI.GetFiles().Chunk(5).Select(x => x);
+            Console.WriteLine("Gruppiert in 5er-Blöcken (Chunk):");
+
             int i = 0;
-            foreach(var v in gruppiert)
+            AusgabeChunk(gruppiertChunk, "Gruppiert in 5er-Blöcken (Chunk):");
+            foreach(var v in gruppiertChunk)
             {
                 Console.WriteLine("Seite "+i);
                 foreach(var vi in v)
@@ -99,17 +117,54 @@ Listen Sie alle Dateien in dem Verzeichnis, nach dem Datum des letzten Zugriffs 
                 i++;
                 Console.WriteLine("----------------");
             }
-
-
+            Console.WriteLine("Alternative Ausgabe:");
+            Console.WriteLine(string.Join("\n\n", DI.GetFiles().Chunk(5).Select(einChunk => string.Join("\n", einChunk.Select(datei => datei.Name)))));
 
         }
-        //public static void Ausgabe(List<T> sammlung,string name)
-        //{
-        //    Console.WriteLine(name);
-        //    foreach(T t in sammlung)
-        //    {
-        //        Console.WriteLine(t);
-        //    }
-        //}
+
+
+
+        public static void AusgabeChunk(IEnumerable<IEnumerable<FileInfo>> collection,string name)
+        {
+            int i = 0;
+            foreach (var innereCollection in collection)
+            {
+                Console.WriteLine("Seite " + i);
+                foreach (var eintrag in innereCollection)
+                {
+                    Console.WriteLine(eintrag);
+                }
+                i++;
+                Console.WriteLine("----------------");
+            }
+        }
+    
+        public static void Ausgabe<T>(IEnumerable<T> sammlung, string name)
+        {
+            Console.WriteLine(name);
+            foreach (T t in sammlung)
+            {
+                Console.WriteLine(t);
+            }
+            Console.WriteLine();
+        }
+
+        public static void Ausgabe(IEnumerable<FileInfo> sammlung, string name,params string[] options)
+        {
+            Console.WriteLine(name);
+            foreach (FileInfo t in sammlung)
+            {
+                Console.Write(t+" - ");
+                if(options.Contains("size"))
+                {
+                    Console.Write(t.Length + " Byte\n");
+                }
+                if (options.Contains("last access"))
+                {
+                    Console.Write(t.LastAccessTime+"\n");
+                }
+            }
+            Console.WriteLine();
+        }
     }
 }
